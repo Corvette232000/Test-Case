@@ -1,0 +1,4968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State & Utility Incentive Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #3498db, #2ecc71, #9b59b6);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+        
+        .calculator-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+            transition: all 0.3s;
+        }
+        
+        select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        
+        .calculate-btn {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            display: none;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .results-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .results-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            border-radius: 2px;
+        }
+        
+        .incentives-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .incentive-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        
+        .incentive-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .state-card {
+            border-left-color: #3498db;
+        }
+        
+        .utility-card {
+            border-left-color: #2ecc71;
+        }
+        
+        .incentive-type {
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .incentive-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .incentive-description {
+            margin-bottom: 10px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .incentive-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .incentive-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+        
+        .incentive-link::after {
+            content: '→';
+            margin-left: 5px;
+            transition: transform 0.2s;
+        }
+        
+        .incentive-link:hover::after {
+            transform: translateX(3px);
+        }
+        
+        .section-title {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .state-title::before {
+            background-color: #3498db;
+        }
+        
+        .utility-title::before {
+            background-color: #2ecc71;
+        }
+        
+        .no-incentives {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .card-count {
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .utility-count {
+            background-color: #2ecc71;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-form, .incentives-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .calculate-btn {
+                grid-column: span 1;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Geothermal Heat Pump Incentive Calculator</h1>
+        <p class="subtitle">Find available incentives in your state</p>
+        
+        <div class="calculator-form">
+            <div class="form-group">
+                <label for="state-select">Select State</label>
+                <select id="state-select">
+                    <option value="">-- Select a State --</option>
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="utility-select">Select Utility</label>
+                <select id="utility-select">
+                    <option value="">-- Select a Utility --</option>
+                    <!-- Options will be populated based on state selection -->
+                </select>
+            </div>
+            
+            <button class="calculate-btn" id="calculate-btn">Calculate Incentives</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h2 class="results-title">Available Incentives</h2>
+            
+            <div class="incentives-container">
+                <div>
+                    <h3 class="section-title state-title">State Incentives <span class="card-count" id="state-count">0</span></h3>
+                    <div id="state-incentives">
+                        <!-- State incentives will be displayed here -->
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="section-title utility-title">Utility Incentives <span class="card-count utility-count" id="utility-count">0</span></h3>
+                    <div id="utility-incentives">
+                        <!-- Utility incentives will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your JSON data
+        const incentivesData = {
+  "MN": [
+    {
+      "Utility/Program": "Minnesota State",
+      "Type": "State",
+      "Incentive": "Geothermal Planning Grant Program",
+      "Link": "https://mn.gov/commerce/energy/consumer/energy-programs/geothermal.jsp"
+    },
+    {
+      "Utility/Program": "Xcel Energy",
+      "Type": "Investor-Owned",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://co.my.xcelenergy.com/s/residential/heating-cooling/heat-pumps"
+    },
+    {
+      "Utility/Program": "Minnesota Power",
+      "Type": "Investor-Owned",
+      "Incentive": "$1,000/ton rebate",
+      "Link": "https://www.mnpower.com/ProgramsRebates/RebatesAndSavings"
+    },
+    {
+      "Utility/Program": "Otter Tail Power Company",
+      "Type": "Investor-Owned",
+      "Incentive": "up to $1,640/ton rebate",
+      "Link": "https://www.otpco.com/ways-to-save/programs/heat-pump/"
+    },
+    {
+      "Utility/Program": "Agralite Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.agralite.coop/rebates"
+    },
+    {
+      "Utility/Program": "Arrowhead Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://arrowheadcoop.com/rebates/"
+    },
+    {
+      "Utility/Program": "Beltrami Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.beltramielectric.com/rebates-and-incentives"
+    },
+    {
+      "Utility/Program": "Benco Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200-$400/ton rebate",
+      "Link": "https://www.benco.org/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Brown County Rural Electric ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $400-500/ton rebate",
+      "Link": "https://www.browncountyrea.coop/rebates"
+    },
+    {
+      "Utility/Program": "Clearwater Polk Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/ton rebate",
+      "Link": "https://www.clearwater-polk.com/sites/default/files/Electric Rebates  Application - 2024 Clearwater-Polk (003).pdf"
+    },
+    {
+      "Utility/Program": "Connexus Energy ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/ton rebate",
+      "Link": "https://www.connexusenergy.com/residential/save-money-and-energy/rebates-and-programs/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Cooperative Light & Power",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $500/ton rebate",
+      "Link": "https://www.clpower.com/sites/default/files/2024 Residential Overview.pdf"
+    },
+    {
+      "Utility/Program": "Crow Wing Power",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,500/unit rebate",
+      "Link": "https://www.cwpower.com/rebates"
+    },
+    {
+      "Utility/Program": "Dakota Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $500/ton rebate",
+      "Link": "https://www.dakotaelectric.com/member-services/programs-rebates/for-your-home/energy-wise-rebates/"
+    },
+    {
+      "Utility/Program": "East Central Energy ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.eastcentralenergy.com/heating-cooling-options"
+    },
+    {
+      "Utility/Program": "Federated Rural Electric ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://federatedrea.coop/sites/default/files/2024 fed Residential GSHP.pdf"
+    },
+    {
+      "Utility/Program": "Freeborn-Mower Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.fmec.coop/sites/default/files/downloadable_information/Rebates/2024/HVAC Rebate Form Fillable - 2024.pdf"
+    },
+    {
+      "Utility/Program": "Goodhue County Co-op Electric ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.gccea.com/member-rebates"
+    },
+    {
+      "Utility/Program": "Itasca-Mantrap Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.itasca-mantrap.com/rebates"
+    },
+    {
+      "Utility/Program": "Kandiyohi Power Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.kpcoop.com/rebates-incentives"
+    },
+    {
+      "Utility/Program": "Lake Country Power Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.lakecountrypower.coop/sites/default/files/money_saving_programs/rebates/2024 Rebates/2024 Ground Source HP Rebate %28complete 2.5.24%29.pdf"
+    },
+    {
+      "Utility/Program": "Lake Region Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.lrec.coop/energy-services/rebates-loans-and-tax-credits/"
+    },
+    {
+      "Utility/Program": "Lyon-Lincoln Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $800/unit rebate",
+      "Link": "https://www.llec.coop/rebates"
+    },
+    {
+      "Utility/Program": "McLeod Cooperative Power",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.mcleodcoop.com/products/rebates/"
+    },
+    {
+      "Utility/Program": "Meeker Cooperative ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.meeker.coop/programs/"
+    },
+    {
+      "Utility/Program": "MiEnergy Cooperative ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.mienergy.coop/sites/default/files/pdf/Rebates/2024IncentiveFormHVACWcost.pdf"
+    },
+    {
+      "Utility/Program": "Mille Lacs Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.mlecmn.net/energy-efficiency/rebates-incentives/"
+    },
+    {
+      "Utility/Program": "Minnesota Valley Cooperative Light & Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$12/1,000 Btu rebate",
+      "Link": "https://www.mnvalleyrec.com/member-services/heating-and-cooling-systems"
+    },
+    {
+      "Utility/Program": "Minnesota Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.mvec.net/rebates-3/"
+    },
+    {
+      "Utility/Program": "Nobles Cooperative Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://nobles.coop/residential-rebates/residential-heat-pump/"
+    },
+    {
+      "Utility/Program": "North Itasca Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://northitascaelectric.com/member-services/space-heating/"
+    },
+    {
+      "Utility/Program": "North Star Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/ton rebate",
+      "Link": "https://northstarelectric.coop/docs/residential-incentive-application/"
+    },
+    {
+      "Utility/Program": "Peoples Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.peoplesenergy.coop/sites/default/files/Rebates/2025 Rebates Summary Page.pdf"
+    },
+    {
+      "Utility/Program": "PKM Electric Co-op Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.pkmcoop.com/wp-content/uploads/2017/06/Electric-Rebate_PKM2024.pdf"
+    },
+    {
+      "Utility/Program": "Red River Valley Co-op Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.rrvcoop.com/energy-saving-programs/rebates"
+    },
+    {
+      "Utility/Program": "Redwood Electric Cooperative ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/ton rebate",
+      "Link": "https://redwoodelectric.com/rebate-programs"
+    },
+    {
+      "Utility/Program": "Renville-Sibley Co-op Power",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit rebate",
+      "Link": "https://www.rscpa.coop/heating-and-cooling-system-rebates"
+    },
+    {
+      "Utility/Program": "Roseau Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$50/kW installed rebate",
+      "Link": "https://www.roseauelectric.coop/products-services/rebate-programs"
+    },
+    {
+      "Utility/Program": "Runestone Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/unit rebate",
+      "Link": "https://www.runestoneelectric.com/energy-wise-programs/residential-rebates/"
+    },
+    {
+      "Utility/Program": "Sioux Valley Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,200/unit rebate",
+      "Link": "https://siouxvalleyenergy.com/programs-and-rebates"
+    },
+    {
+      "Utility/Program": "Stearns Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$150/ton rebate",
+      "Link": "https://www.stearnselectric.org/save-money-and-energy/energywise-rebates/heating-and-cooling-rebates/"
+    },
+    {
+      "Utility/Program": "Steele-Waseca Cooperative Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$100/ton rebate",
+      "Link": "https://swce.coop/swce-field-services/save-money-and-energy/"
+    },
+    {
+      "Utility/Program": "Todd-Wadena Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://toddwadena.coop/services/rebates/heat-pumps/"
+    },
+    {
+      "Utility/Program": "Traverse Electric Co-op Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$.0562/kWh rate",
+      "Link": "https://www.traverseelectric.com/rebates-and-incentives"
+    },
+    {
+      "Utility/Program": "Wild Rice Electric Co-op Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200-400/ton rebate",
+      "Link": "https://www.wildriceelectric.com/money-saving-programs/rebates"
+    },
+    {
+      "Utility/Program": "Wright-Hennipen Cooperative Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,950/unit + $.10500/kWh rate",
+      "Link": "https://www.whe.org/energy-savings-rebates/residential-programs-and-rebates/ground-source-heat-pump.html"
+    },
+    {
+      "Utility/Program": "New Prague Utilities Commission",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/new-prague"
+    },
+    {
+      "Utility/Program": "Austin Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.austinutilities.com/pages/rebates-programs/"
+    },
+    {
+      "Utility/Program": "Alexandria Light and Power",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.alputilities.com/residential/rebates-programs/"
+    },
+    {
+      "Utility/Program": "Willmar Municipal Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.brightenergysolutions.com/members/willmar-municipal-utilities?rebates=residential"
+    },
+    {
+      "Utility/Program": "Redwood Falls Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/redwood-falls"
+    },
+    {
+      "Utility/Program": "Preston Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/preston"
+    },
+    {
+      "Utility/Program": "Mora Municipal Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/mora"
+    },
+    {
+      "Utility/Program": "Spring Valley Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/spring-valley"
+    },
+    {
+      "Utility/Program": "Fairmont Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/fairmont"
+    },
+    {
+      "Utility/Program": "Grand Marais PUC",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://drive.google.com/file/d/12fT7twFYzbNXagGfpg2zWKuQHGVKdF-5/view"
+    },
+    {
+      "Utility/Program": "Litchfield Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/litchfield"
+    },
+    {
+      "Utility/Program": "Elk River Municipal Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$600/ton rebate",
+      "Link": "https://www.ermumn.com/programs-rebates/residential-rebates/heat-pumps"
+    },
+    {
+      "Utility/Program": "Blooming Prairie Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/blooming-prairie"
+    },
+    {
+      "Utility/Program": "Marshall Municipal Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.marshallutilities.com/index.php/business/commercial-rebates-conservation"
+    },
+    {
+      "Utility/Program": "Hutchison Utilities Commission",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.brightenergysolutions.com/members/hutchinson-utilities-commission?rebates=residential"
+    },
+    {
+      "Utility/Program": "Owatonna Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://www.owatonnautilities.com/residential-customers/residential-rebates/"
+    },
+    {
+      "Utility/Program": "Shakopee Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$500/unit rebate",
+      "Link": "https://shakopeeutilities.com/residential/2024-residential-rebates-2/"
+    },
+    {
+      "Utility/Program": "New Prague Utilities Commission",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/new-prague"
+    },
+    {
+      "Utility/Program": "Saint Peter Municipal Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/saint-peter"
+    },
+    {
+      "Utility/Program": "Lake City Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://smmpa.com/members/lake-city"
+    },
+    {
+      "Utility/Program": "Waseca Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://www.ci.waseca.mn.us/electric-utility/pages/electric-rebates"
+    },
+    {
+      "Utility/Program": "Rochester Public Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/ton +$20/ton for each 1 EER",
+      "Link": "https://www.rpu.org/rebates-programs/residential/conserve-save-rebates.php"
+    }
+  ],
+  "CO": [
+    {
+      "Utility/Program": "Colorado State",
+      "Type": "State",
+      "Incentive": "10% tax credit on full purchase",
+      "Link": "https://geothermal.colorado.gov/geothermal-incentives"
+    },
+    {
+      "Utility/Program": "Colorado State",
+      "Type": "State",
+      "Incentive": "Geothermal Energy Grant Program",
+      "Link": ""
+    },
+    {
+      "Utility/Program": "Colorado State",
+      "Type": "State",
+      "Incentive": "High Efficiency Electric Heating and Appliance Grant",
+      "Link": ""
+    },
+    {
+      "Utility/Program": "Colorado State",
+      "Type": "State",
+      "Incentive": "Public Building Electrification Grant",
+      "Link": ""
+    },
+    {
+      "Utility/Program": "Colorado State",
+      "Type": "State",
+      "Incentive": "$10,000/household for damaged or destroyed home",
+      "Link": ""
+    },
+    {
+      "Utility/Program": "Colorado State",
+      "Type": "State",
+      "Incentive": "HOMES Program (rebate)",
+      "Link": "https://doh.colorado.gov/home-program"
+    },
+    {
+      "Utility/Program": "Colorado State",
+      "Type": "State",
+      "Incentive": "HEAR Program (rebate)",
+      "Link": "https://energyoffice.colorado.gov/home-energy-rebates"
+    },
+    {
+      "Utility/Program": "Xcel Energy",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://co.my.xcelenergy.com/s/residential/heating-cooling/heat-pumps"
+    },
+    {
+      "Utility/Program": "Black Hills Energy",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$1,700/unit rebate",
+      "Link": "https://www.blackhillsenergy.com/efficiency-and-savings/residential-rebates/colorado-electric-residential-rebates"
+    },
+    {
+      "Utility/Program": "K.C Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://kcelectric.coop/sites/default/files/documents/2024 Electric Heat Pump Air and Ground Source Type.pdf"
+    },
+    {
+      "Utility/Program": "San Luis Valley Rural Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.slvrec.com/rebates"
+    },
+    {
+      "Utility/Program": "La Plata Electric Association, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://lpea.coop/heat-pump-rebatesmini-split-system-rebates"
+    },
+    {
+      "Utility/Program": "San Miguel Power Association, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.smpa.com/energy"
+    },
+    {
+      "Utility/Program": "Empire Electric Association, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/ton rebate + $200/unit for desuperheater",
+      "Link": "https://eea.coop/2025-heat-pump-rebate-program-information"
+    },
+    {
+      "Utility/Program": "Morgan County Rural Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.mcrea.org/energy-efficiency-rebates"
+    },
+    {
+      "Utility/Program": "Sangre De Cristo Electric Association Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate + $100/unit for desuperheater",
+      "Link": "https://www.myelectric.coop/wp-content/uploads/Electric-Heat-Pump.pdf"
+    },
+    {
+      "Utility/Program": "Southeast Colorado Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$50/ton rebate + $50/unit for Energy Star Rating",
+      "Link": "https://www.secpa.com/rebates"
+    },
+    {
+      "Utility/Program": "Mountain Parks Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton ",
+      "Link": "https://mpei.com/2025-rebates"
+    },
+    {
+      "Utility/Program": "Gunnison County Electric Association, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $1,000/ton rebate + $100/unit for desuperheater",
+      "Link": "https://www.gcea.coop/electric-heat-pump-ground-source/"
+    },
+    {
+      "Utility/Program": "Mountain View Electric Association, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.mvea.coop/save-energy-money/rebates/electric-heat-pump-rebates/"
+    },
+    {
+      "Utility/Program": "United Power, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $2,500/unit",
+      "Link": "https://www.unitedpower.com/heat-pumps"
+    },
+    {
+      "Utility/Program": "Highline Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$850/ton rebate",
+      "Link": "https://www.hea.coop/rebates"
+    },
+    {
+      "Utility/Program": "Poudre Valley Rural Electric Association, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$700/ton rebate",
+      "Link": "https://pvrea.coop/for-members/rebates/heating-cooling-rebates/"
+    },
+    {
+      "Utility/Program": "White River Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.wrea.org/rebates"
+    },
+    {
+      "Utility/Program": "San Isabel Electric Association, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://siea.com/rebates/"
+    },
+    {
+      "Utility/Program": "Y-W Electric Association, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$700/ton rebate",
+      "Link": "https://www.ywelectric.coop/rebate-program-information"
+    },
+    {
+      "Utility/Program": "Burlington Municipal",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "calculated on a customer basis",
+      "Link": "https://www.burlingtonelectric.com/gshp "
+    },
+    {
+      "Utility/Program": "Fort Collins Utilities",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "loan up to $50,000",
+      "Link": "https://www.fcgov.com/utilities/residential/conserve/financing/rental-property-single-family "
+    }
+  ],
+  "IL": [
+    {
+      "Utility/Program": "Illinois State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Commonwealth Edison (ComEd)",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $6,000/home",
+      "Link": "https://www.comed.com/ways-to-save/for-your-home/rebates-discounts/heating-cooling-discounts"
+    },
+    {
+      "Utility/Program": "MidAmerican Energy Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$900-$1,200/unit",
+      "Link": "https://www.midamericanenergy.com/home-discounts-and-rebates"
+    },
+    {
+      "Utility/Program": "JCE Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/ton rebate",
+      "Link": "https://jcecoop.com/incentives"
+    },
+    {
+      "Utility/Program": "Corn Belt Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,500/unit rebate + Loop Install Program",
+      "Link": "https://cornbeltenergy.com/geocents/"
+    },
+    {
+      "Utility/Program": "Enerstar Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/rebates/residential/"
+    },
+    {
+      "Utility/Program": "M.J.M Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/rebates/residential/"
+    },
+    {
+      "Utility/Program": "Adams Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Loan Program",
+      "Link": "https://adamselectric.coop/member-services/energyefficiencymembers/"
+    },
+    {
+      "Utility/Program": "Menard Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit rebate",
+      "Link": "https://menard.com/incentives"
+    },
+    {
+      "Utility/Program": "Western Illinois Electrical Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/unit bill credit, Loan Program, Geo Rate",
+      "Link": "https://wiec.net/geothermal-heating-and-cooling/"
+    },
+    {
+      "Utility/Program": "WayneWhite Counties Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.waynewhitecoop.com/energy-solutions/geothermal-technology/"
+    },
+    {
+      "Utility/Program": "Clinton County Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$7.50/month bill credit",
+      "Link": "https://www.cceci.com/member-benefits-and-programs/"
+    },
+    {
+      "Utility/Program": "Springfield City Water, Light & Power (CWLP)",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200-800/ton rebate",
+      "Link": "https://www.cwlp.com/ServicesHome/ServicesInformation/AllRebates.aspx"
+    }
+  ],
+  "MI": [
+    {
+      "Utility/Program": "Michigan State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Consumers Energy",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$300/unit rebate",
+      "Link": "https://www.consumersenergy.com/-/media/CE/Documents/residential/save-money-and-energy/rebates/hvac/res-programs.pdf"
+    },
+    {
+      "Utility/Program": "DTE Energy",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$800/unit rebate",
+      "Link": "https://www.dteenergy.com/us/en/residential/save-money-energy/rebates-and-offers/air-conditioners.html"
+    },
+    {
+      "Utility/Program": "Alger Delta Cooperative Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$4,000/unit rebate ($2k/$2k, unit & loop)",
+      "Link": "https://www.algerdelta.com/hvac-rebates"
+    },
+    {
+      "Utility/Program": "Cherryland Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://cherrylandelectric.coop/rebates/"
+    },
+    {
+      "Utility/Program": "Great Lakes Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$4,500/unit rebate ($2k/$2.5k, unit & loop)+$500 for desuperheater",
+      "Link": "https://www.gtlakes.com/energy-wise/"
+    },
+    {
+      "Utility/Program": "HomeWorks Tri-County Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$4,000/unit rebate ($1.5k/$2.5k, unit & loop) + $500 for desuperheater",
+      "Link": "https://www.homeworks.org/210-2/electric-home/member-services/eo/"
+    },
+    {
+      "Utility/Program": "Ontonagon County REA",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/unit rebate",
+      "Link": "https://upeic.com/"
+    },
+    {
+      "Utility/Program": "Presque Isle Electric & Gas Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$4,000/unit rebate ($1.5k/$2.5k, unit & loop) + $500 for desuperheater",
+      "Link": "https://pieg.com/energy-optimization-rebates/"
+    },
+    {
+      "Utility/Program": "Thumb Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.tecmi.coop/rebates-programs"
+    },
+    {
+      "Utility/Program": "City of Crystal Falls",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$1,000/unit rebate",
+      "Link": "https://upeic.com/"
+    },
+    {
+      "Utility/Program": "City of Negaunee",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$1,000/unit rebate",
+      "Link": "https://upeic.com/"
+    },
+    {
+      "Utility/Program": "City of Norway",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$1,000/unit rebate",
+      "Link": "https://upeic.com/"
+    }
+  ],
+  "NJ": [
+    {
+      "Utility/Program": "New Jersey State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Jersey Central Power & Light",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$1,500/unit rebate",
+      "Link": "https://residential.energysavenj.com/jersey-central/hvac/"
+    },
+    {
+      "Utility/Program": "Orange & Rockland Electric",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$1,000-4,000/10,000 BTUh rebate",
+      "Link": "https://www.oru.com/en/save-money/rebates-incentives-credits/new-jersey-customers/incentives-for-residential-customers-nj/efficient-products/heating-cooling-equipment"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "MA": [
+    {
+      "Utility/Program": "Massachusetts State",
+      "Type": "State",
+      "Incentive": "up to $25,000 per home rebate",
+      "Link": "https://www.masssave.com/en/residential/rebates-and-incentives/heating-and-cooling/heat-pumps/ground-source-heat-pumps"
+    },
+    {
+      "Utility/Program": "National Grid",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $15,000/home",
+      "Link": "https://www.masssave.com/en/residential/rebates-and-incentives/heating-and-cooling/heat-pumps/ground-source-heat-pumps "
+    },
+    {
+      "Utility/Program": "Eversource",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$15,000/home or up to $25,000/home",
+      "Link": "https://www.masssave.com/en/residential/rebates-and-incentives/heating-and-cooling/heat-pumps/ground-source-heat-pumps "
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Cape Light Compact",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$4,500/ton rebate",
+      "Link": "https://www.capelightcompact.org/heating-and-cooling-rebates/#Geo "
+    }
+  ],
+  "MO": [
+    {
+      "Utility/Program": "Missouri State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Ameren Missouri",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "Not Currently Active",
+      "Link": "https://www.ameren.com/missouri/residential/energy-efficiency/hvac"
+    },
+    {
+      "Utility/Program": "Liberty Utility",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$550/unit rebate",
+      "Link": "https://central.libertyutilities.com/uploads/2024.01.26 45542_Liberty_HVAC_Rebate_Chart_v01_Web.pdf"
+    },
+    {
+      "Utility/Program": "Atchison-Holt Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://ahec.coop/index.php/products-services/rebate-information/"
+    },
+    {
+      "Utility/Program": "Farmers Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.fec-co.com/rebate-program"
+    },
+    {
+      "Utility/Program": "Grundy Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://grundyec.com/rebates"
+    },
+    {
+      "Utility/Program": "Platte-Clay Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://pcec.coop/products/heat-pump-systems/"
+    },
+    {
+      "Utility/Program": "United Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.ueci.coop/rebate-program"
+    },
+    {
+      "Utility/Program": "West Central Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://westcentralelectric.coop/geo-thermal-systems"
+    },
+    {
+      "Utility/Program": "Lewis County Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://lewiscountyrec.org/program-rebates"
+    },
+    {
+      "Utility/Program": "Macon Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.maconelectric.com/rebates"
+    },
+    {
+      "Utility/Program": "Missouri Rural Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.morec.org/rebates-products/"
+    },
+    {
+      "Utility/Program": "Ralls County Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.rallscountyelectric.com/ground-source-heat-pump"
+    },
+    {
+      "Utility/Program": "Tri-County Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.tricountyelectric.org/rebates-electronic"
+    },
+    {
+      "Utility/Program": "Boone Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://booneelectric.coop/energy-solutions/ground-source-heat-pumps/"
+    },
+    {
+      "Utility/Program": "Callaway Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$850/ton rebate",
+      "Link": "https://callawayelectric.com/rebates"
+    },
+    {
+      "Utility/Program": "Central MO Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.cmecinc.com/rebates"
+    },
+    {
+      "Utility/Program": "Co-MO Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$850/ton rebate",
+      "Link": "https://www.co-mo.coop/rebates"
+    },
+    {
+      "Utility/Program": "Consolidated Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.consolidatedelectric.com/rebates"
+    },
+    {
+      "Utility/Program": "Cuivre River Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.cuivre.com/rebates"
+    },
+    {
+      "Utility/Program": "Howard Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/ton rebate",
+      "Link": "https://howardelectric.com/rebates-0"
+    },
+    {
+      "Utility/Program": "Three Rivers Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.threeriverselectric.com/gshp-rebate"
+    },
+    {
+      "Utility/Program": "Barry Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.barryelectric.com/rebates"
+    },
+    {
+      "Utility/Program": "Barton County Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://bartonelectric.com/energy-efficiency/rebates/"
+    },
+    {
+      "Utility/Program": "New-Mac Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate",
+      "Link": "https://www.newmac.com/rebates"
+    },
+    {
+      "Utility/Program": "Osage Valley Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.osagevalley.com/rebates/"
+    },
+    {
+      "Utility/Program": "Ozark Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.ozarkelectric.com/rebates"
+    },
+    {
+      "Utility/Program": "Sac Osage Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://sacosage.com/rebate-programs"
+    },
+    {
+      "Utility/Program": "Southwest Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.swec.org/rebates-audits"
+    },
+    {
+      "Utility/Program": "Crawford Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.crawfordelec.com/Rebates"
+    },
+    {
+      "Utility/Program": "Gascosage Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.gascosage.coop/rebates-2/"
+    },
+    {
+      "Utility/Program": "Howell-Oregon Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$350/ton rebate",
+      "Link": "https://www.hoecoop.org/rebates"
+    },
+    {
+      "Utility/Program": "Intercounty Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://ieca.coop/rebate-program"
+    },
+    {
+      "Utility/Program": "Laclede Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://lacledeelectric.com/rebate/"
+    },
+    {
+      "Utility/Program": "Se-Ma-No Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.semano.com/rebates"
+    },
+    {
+      "Utility/Program": "Webster Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.websterec.com/member-services/rebates/"
+    },
+    {
+      "Utility/Program": "White River Valley Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.whiteriver.org/member-center/rebates-audits/"
+    },
+    {
+      "Utility/Program": "Black River Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://brec.coop/rebate-programs"
+    },
+    {
+      "Utility/Program": "Citizens Electric ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://cecmo.com/residential-rebates"
+    },
+    {
+      "Utility/Program": "Ozark Border Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.ozarkborder.org/rebate-info.php"
+    },
+    {
+      "Utility/Program": "SEMO Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.gosemo.com/energy-efficiency/rebates/"
+    },
+    {
+      "Utility/Program": "Springfield",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$1,025/unit rebate",
+      "Link": "https://www.cityutilities.net/save/hvac/"
+    },
+    {
+      "Utility/Program": "Columbia",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$1,200/unit rebate",
+      "Link": "https://www.como.gov/utilities/columbia-power-partners/residential-programs-and-tools/air-conditioner-and-heat-pump-rebates/"
+    },
+    {
+      "Utility/Program": "Independence",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "up to $701/unit rebate",
+      "Link": "https://www.independencemo.gov/government/city-departments/power-and-light/residential-programs"
+    }
+  ],
+  "IN": [
+    {
+      "Utility/Program": "Indiana State",
+      "Type": "State",
+      "Incentive": "HOMES & HEAR Program",
+      "Link": "https://indianaenergysaver.com/"
+    },
+    {
+      "Utility/Program": "Duke Energy Indiana",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $700/unit rebate",
+      "Link": "https://www.duke-energy.com/home/products/smart-saver/hvac-install"
+    },
+    {
+      "Utility/Program": "Carrol White REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,500/unit rebate, $150/unit for contractor",
+      "Link": "https://www.cwremc.coop/programs/rebates/heat-pump-rebates/"
+    },
+    {
+      "Utility/Program": "Fulton County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/unit rebate + $2,000/unit from PowerMoves",
+      "Link": "https://www.fcremc.coop/residential-rebates/"
+    },
+    {
+      "Utility/Program": "Bartholomew County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit  rebate",
+      "Link": "https://www.bcremc.com/save-energy-money/incentives/"
+    },
+    {
+      "Utility/Program": "Clark County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.clarkremc.coop/energy-efficiency/rebates/hvac-rebates/"
+    },
+    {
+      "Utility/Program": "Daviess-Martin County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.dmremc.com/residential-rebates/"
+    },
+    {
+      "Utility/Program": "Decatur County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://commentportal.com/wp-content/uploads/24-Residential-HVAC-Application.pdf"
+    },
+    {
+      "Utility/Program": "Dubois REC, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.duboisrec.com/electric-hvac-and-water-heating-rebates/"
+    },
+    {
+      "Utility/Program": "Harrison REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.harrisonremc.com/wp-content/uploads/2024/01/2024-Residential-HVAC-Rebate-Application-Fillable.pdf"
+    },
+    {
+      "Utility/Program": "Henry County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.hcremc.com/energy-efficiency/rebates/"
+    },
+    {
+      "Utility/Program": "Jackson County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.jacksonremc.com/wp-content/uploads/2023/12/HVAC-APPLICATION-2024.pdf"
+    },
+    {
+      "Utility/Program": "Heartland REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$150/ton rebate or $2,000/unit",
+      "Link": "https://www.heartlandremc.com/rebates"
+    },
+    {
+      "Utility/Program": "JCREMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://jcremc.com/savings/rebates/"
+    },
+    {
+      "Utility/Program": "Orange County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.myremc.coop/residential-rebates"
+    },
+    {
+      "Utility/Program": "South Central Indiana REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.sciremc.com/save-energy-money/rebates-credits/geothermal/"
+    },
+    {
+      "Utility/Program": "Southeastern Indiana",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.seiremc.com/geothermalheatpumprebate"
+    },
+    {
+      "Utility/Program": "Boone REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.bremc.com/wp-content/uploads/2023/12/Power-Moves-Geothermal-Heat-Pump-Rebate-Application-2024.pdf"
+    },
+    {
+      "Utility/Program": "Hendricks Power Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/rebates/residential/"
+    },
+    {
+      "Utility/Program": "Southern Indiana Power",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.southernindianapower.com/wp-content/uploads/23-1986-Residential-HVAC-Application-Southern-Indiana-Power.pdf"
+    },
+    {
+      "Utility/Program": "Jasper County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,500/unit rebate",
+      "Link": "https://www.jasperremc.com/programs/rebate-programs/residential-rebates/"
+    },
+    {
+      "Utility/Program": "Jay County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/wp-content/uploads/2023/12/Power-Moves-Geothermal-Heat-Pump-Rebate-Application-2024-FINAL.pdf"
+    },
+    {
+      "Utility/Program": "Marshall County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/rebates/residential/"
+    },
+    {
+      "Utility/Program": "KanKaKee Valley REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,250/unit rebate",
+      "Link": "https://www.kvremc.com/savings/rebate-programs/"
+    },
+    {
+      "Utility/Program": "Utilities District of Western Indiana",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.udwiremc.com/wp-content/uploads/2024/01/23-1986-Residential-HVAC-Application-Utilities-District-of-Western-Indiana-REMC.pdf"
+    },
+    {
+      "Utility/Program": "Lagrange County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/wp-content/uploads/2023/12/Power-Moves-Geothermal-Heat-Pump-Rebate-Application-2024-FINAL.pdf"
+    },
+    {
+      "Utility/Program": "Kosciusko REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,250/unit rebate",
+      "Link": "https://kremc.com/rebates"
+    },
+    {
+      "Utility/Program": "Newton County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/wp-content/uploads/2023/12/Power-Moves-Geothermal-Heat-Pump-Rebate-Application-2024-FINAL.pdf"
+    },
+    {
+      "Utility/Program": "WIN Energy REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.winenergyremc.com/sites/default/files/Rebate Information/HVAC Application and Terms and Conditions.pdf"
+    },
+    {
+      "Utility/Program": "White Water Valley REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.wwvremc.com/residential-incentives/"
+    },
+    {
+      "Utility/Program": "Noble REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://nobleremc.com/rebates"
+    },
+    {
+      "Utility/Program": "Parke County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,800/unit rebate",
+      "Link": "https://www.pcremc.com/rebates"
+    },
+    {
+      "Utility/Program": "Ninestar Connect",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/wp-content/uploads/2023/12/Power-Moves-Geothermal-Heat-Pump-Rebate-Application-2024-FINAL.pdf"
+    },
+    {
+      "Utility/Program": "RushShelby Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.rse.coop/energy-savings/rebates/residential/"
+    },
+    {
+      "Utility/Program": "Steuben County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.powermoves.com/wp-content/uploads/2023/12/Power-Moves-Geothermal-Heat-Pump-Rebate-Application-2024-FINAL.pdf"
+    },
+    {
+      "Utility/Program": "Warren County REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://www.wcremc.com/rebate-programs/"
+    },
+    {
+      "Utility/Program": "Tipmont REMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Redesign In Progress",
+      "Link": "https://www.powermoves.com/wp-content/uploads/2023/12/Power-Moves-Geothermal-Heat-Pump-Rebate-Application-2024-FINAL.pdf"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "OH": [
+    {
+      "Utility/Program": "Ohio State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "North Western Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit rebate",
+      "Link": "https://www.nwec.com/rebates"
+    },
+    {
+      "Utility/Program": "Tricounty Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit rebate",
+      "Link": "https://www.tricountyelectriccoop.coop/rebates"
+    },
+    {
+      "Utility/Program": "Paulding Putnam Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$450/unit account credit",
+      "Link": "https://ppec.coop/rebate-programs"
+    },
+    {
+      "Utility/Program": "Hancock-Wood Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$900/unit rebate",
+      "Link": "https://www.hwe.coop/geothermal-system-rebates"
+    },
+    {
+      "Utility/Program": "North Central Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Up to $800/unit rebate",
+      "Link": "https://ncelec.org/rebates-programs"
+    },
+    {
+      "Utility/Program": "Firelands Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit rebate + $10 bill credit for July, Aug, Sept, Oct",
+      "Link": "https://firelandsec.com/geothermal-and-heat-pump-rebates"
+    },
+    {
+      "Utility/Program": "Lorain-Medina Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Up to $800/unit rebate",
+      "Link": "https://lmre.org/rebates-programs"
+    },
+    {
+      "Utility/Program": "Midwest Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit bill credit",
+      "Link": "https://midwestrec.com/rebates"
+    },
+    {
+      "Utility/Program": "Mid-Ohio Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit bill credit",
+      "Link": "https://www.midohioenergy.com/heat-pumps-geothermal"
+    },
+    {
+      "Utility/Program": "Darke Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit rebate",
+      "Link": "https://www.darkerec.com/rebateprograms"
+    },
+    {
+      "Utility/Program": "Pioneer Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $1,000/unit bill credit",
+      "Link": "https://pioneerec.com/member-programs/rebates-incentives/"
+    },
+    {
+      "Utility/Program": "Union Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit rebate",
+      "Link": "https://ure.com/ways-to-save/rebate-programs-services/geothermal-rebate/"
+    },
+    {
+      "Utility/Program": "Consolidated Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit bill credit",
+      "Link": "https://www.consolidated.coop/electric/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Carroll Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit rebate",
+      "Link": "https://www.cecpower.coop/rebates-incentive-programs"
+    },
+    {
+      "Utility/Program": "The Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/unit rebate",
+      "Link": "https://myenergycoop.com/rebate-programs"
+    },
+    {
+      "Utility/Program": "Guernsey-Muskingum Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit rebate",
+      "Link": "https://gmenergy.com/geothermal"
+    },
+    {
+      "Utility/Program": "Washington Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/unit rebate",
+      "Link": "https://www.weci.org/rebates-and-incentives"
+    },
+    {
+      "Utility/Program": "Butler Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Up to $1,200/unit rebate",
+      "Link": "https://butlerrural.coop/geothermal-rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "OK": [
+    {
+      "Utility/Program": "Oklahoma State",
+      "Type": "State",
+      "Incentive": "None ",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None ",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Alfalfa Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,050/ton rebate",
+      "Link": "https://www.aec.coop/other-services/"
+    },
+    {
+      "Utility/Program": "Central Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://mycentral.coop/rebates"
+    },
+    {
+      "Utility/Program": "Choctaw Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Energy Efficiency Loan Program",
+      "Link": "https://choctawelectric.net/energy-efficiency-program"
+    },
+    {
+      "Utility/Program": "Cimarron Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/unit rebate",
+      "Link": "https://cimarronelectric.com/home/member-center/rebate-form/"
+    },
+    {
+      "Utility/Program": "CKenergy Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,625/ton rebate",
+      "Link": "https://www.ckenergy.coop/energy-efficiency-geothermals"
+    },
+    {
+      "Utility/Program": "Cookson Hills Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.cooksonhills.com/rebates"
+    },
+    {
+      "Utility/Program": "Cotton Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.cottonelectric.com/rebate-program"
+    },
+    {
+      "Utility/Program": "East Central Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://ecoec.com/rebates"
+    },
+    {
+      "Utility/Program": "Harmon Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/ton rebate + ERC Loan Program",
+      "Link": "https://harmonelectric.com/geothermal"
+    },
+    {
+      "Utility/Program": "Indian Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.iecok.com/rebates"
+    },
+    {
+      "Utility/Program": "Kay Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/ton rebate   ",
+      "Link": "https://www.kayelectric.coop/rebates"
+    },
+    {
+      "Utility/Program": "Lake Region Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate",
+      "Link": "https://www.lrecok.coop/rebates"
+    },
+    {
+      "Utility/Program": "Northfork Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.nfecoop.com/rebates"
+    },
+    {
+      "Utility/Program": "Northwestern Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/ton rebate",
+      "Link": "https://www.nwecok.coop/rebate-programs"
+    },
+    {
+      "Utility/Program": "Oklahoma Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://okcoop.org/rebates/"
+    },
+    {
+      "Utility/Program": "Ozarks Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Details Unknown (fill out forms)",
+      "Link": "https://www.ozarksecc.com/rebate-forms"
+    },
+    {
+      "Utility/Program": "People's Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.peopleselectric.coop/energy-savings/rebates/"
+    },
+    {
+      "Utility/Program": "Red River Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/ton rebate",
+      "Link": "https://rrvrea.com/member-services-rebates"
+    },
+    {
+      "Utility/Program": "Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,050/ton rebate",
+      "Link": "https://www.recok.coop/rebates"
+    },
+    {
+      "Utility/Program": "Southeastern Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit rebate",
+      "Link": "https://www.se-coop.com/heat-pump-rebates"
+    },
+    {
+      "Utility/Program": "Southwest Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit rebate + ERC Loans",
+      "Link": "https://www.sweci.com/technology-rebates-erc-loans"
+    },
+    {
+      "Utility/Program": "Verdigris Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate",
+      "Link": "https://www.vvec.com/rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None ",
+      "Link": "None"
+    }
+  ],
+  "KS": [
+    {
+      "Utility/Program": "Kansas State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "4 Rivers Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://4riverselectric.com/energy-efficiency-rebate-program"
+    },
+    {
+      "Utility/Program": "Alfalfa Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,050/ton rebate",
+      "Link": "https://www.aec.coop/other-services/"
+    },
+    {
+      "Utility/Program": "Bluestem Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://bluestemelectric.com/available-rebates"
+    },
+    {
+      "Utility/Program": "Brown-Atchison Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://baelectric.com/rebates/"
+    },
+    {
+      "Utility/Program": "Butler Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://www.butler.coop/rebates"
+    },
+    {
+      "Utility/Program": "Caney Valley Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://www.caneyvalley.com/rebates/"
+    },
+    {
+      "Utility/Program": "CMS Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Unknown - must call ",
+      "Link": "https://cmselectric.com/rebate-and-surge-suppression-programs"
+    },
+    {
+      "Utility/Program": "DSO Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://www.dsoelectric.com/heat-pump-rebates"
+    },
+    {
+      "Utility/Program": "Flint Hills Rural Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://flinthillsrec.com/rebate-program"
+    },
+    {
+      "Utility/Program": "FreeState Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://freestate.coop/rebates"
+    },
+    {
+      "Utility/Program": "Heartland Rural Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$150/half-ton rebate",
+      "Link": "https://www.heartland-rec.com/energy-information/appliance-rebates/"
+    },
+    {
+      "Utility/Program": "Midwest Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "HomeSmart Program",
+      "Link": "https://www.mwenergy.com/environmental/energy-efficiency/howsmart"
+    },
+    {
+      "Utility/Program": "Ninnescah Rural Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://www.ninnescah.com/rebates/"
+    },
+    {
+      "Utility/Program": "Twin Valley Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$125/half-ton rebate",
+      "Link": "https://www.twinvalleyelectric.coop/rebate-program"
+    },
+    {
+      "Utility/Program": "Western Cooperative Electric ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/ton rebate",
+      "Link": "https://www.westerncoop.com/rebates"
+    },
+    {
+      "Utility/Program": "Wheatland Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$50/half-ton rebate",
+      "Link": "https://www.weci.net/rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "DE": [
+    {
+      "Utility/Program": "Delaware State",
+      "Type": "State",
+      "Incentive": "Grants and rebates through DNREC Division of Climate, Coastal and Energy for renewable energy projects",
+      "Link": "https://dnrec.delaware.gov/climate-coastal-energy/renewable/assistance/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Delaware Electric Cooperative ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$800/ton (first 2), $700/ton thereafter up to $3k",
+      "Link": "https://www.delaware.coop/renewable-energy-efficiency-grants"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "WI": [
+    {
+      "Utility/Program": "Wisconsin State",
+      "Type": "State",
+      "Incentive": "up to $1000 rebate through participating utilities",
+      "Link": "https://www.renewwisconsin.org/geothermal/"
+    },
+    {
+      "Utility/Program": "Wisconsin Electric Power Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://focusonenergy.com/residential/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Wisconsin Public Service Corporation",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://focusonenergy.com/residential/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Madison Gas & Electric",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://focusonenergy.com/residential/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Superior Water, Light & Power Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://focusonenergy.com/residential/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Pioneer Power & Light Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://focusonenergy.com/residential/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "North Central Power Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://focusonenergy.com/residential/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Clark Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$650/ton rebate",
+      "Link": "https://www.cecoop.com/rebatesincentives"
+    },
+    {
+      "Utility/Program": "Eau Claire Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://documents.ecec.com/documents/incentives/heating-and-cooling/Incentive_HVAC.pdf"
+    },
+    {
+      "Utility/Program": "Dunn Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.dunnenergy.com/home-rebates"
+    },
+    {
+      "Utility/Program": "Oakdale Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://oakdalerec.coop/incentives"
+    },
+    {
+      "Utility/Program": "Pierce Pepin Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://piercepepin.coop/programs-rebates"
+    },
+    {
+      "Utility/Program": "Scenic rivers Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.sre.coop/energy-rebates"
+    },
+    {
+      "Utility/Program": "Adams-Columbia Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://www.focusonenergy.com/residential/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Barron Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.barronelectric.com/2025-energy-rebates"
+    },
+    {
+      "Utility/Program": "Bayfield Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.bayfieldelectric.com/rebates"
+    },
+    {
+      "Utility/Program": "Cheppewa Valley Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$700/ton rebate",
+      "Link": "https://www.cvecoop.com/rebates.php"
+    },
+    {
+      "Utility/Program": "East Central Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.eastcentralenergy.com/heating-cooling-options"
+    },
+    {
+      "Utility/Program": "Jackson Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.jackelec.com/rebates-and-incentives"
+    },
+    {
+      "Utility/Program": "Oconto Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://www.focusonenergy.com/residential/heating-and-cooling"
+    },
+    {
+      "Utility/Program": "Jump River Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://jrec.com/energy-sense-rebates"
+    },
+    {
+      "Utility/Program": "Price Electric ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://priceelectric.coop/rebates"
+    },
+    {
+      "Utility/Program": "Riverland Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.riverlandenergy.com/rebates"
+    },
+    {
+      "Utility/Program": "Rock Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$700/unit rebate",
+      "Link": "https://www.focusonenergy.com/utility-partners/rock-energy-cooperative"
+    },
+    {
+      "Utility/Program": "Taylor Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://taylorelectric.org/energy-incentive-programs"
+    },
+    {
+      "Utility/Program": "St. Croix Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.scecnet.net/rebates"
+    },
+    {
+      "Utility/Program": "Vernon Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://vernonelectric.org/rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "TN": [
+    {
+      "Utility/Program": "Tennesse State",
+      "Type": "State",
+      "Incentive": "NONE",
+      "Link": "NONE"
+    },
+    {
+      "Utility/Program": "Tennessee Valley Authority (Federally Owned)",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/"
+    },
+    {
+      "Utility/Program": "Appalachian Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate (New Home) + Loan Program",
+      "Link": "https://www.aecoop.org/services-products/programs/"
+    },
+    {
+      "Utility/Program": "Caney Fork Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Heat Pump Loan Program",
+      "Link": "https://caneyforkec.com/heat-pump-program/"
+    },
+    {
+      "Utility/Program": "Chickasaw Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Cumberland Electric Membership Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://cemc.org/programs/energy-solutions/"
+    },
+    {
+      "Utility/Program": "Duck River Electric Membership Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://www.dremc.com/programs-services/"
+    },
+    {
+      "Utility/Program": "Forked Deer Electric Cooperative Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Fort Loudoun Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://www.flec.org/energy-solutions/tva-programs"
+    },
+    {
+      "Utility/Program": "Gibson Electric Membership Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://gibsoncoops.com/services/"
+    },
+    {
+      "Utility/Program": "Holston Electric Cooperative Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Meriwether Lewis Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://mlec.com/heat-pump-program/"
+    },
+    {
+      "Utility/Program": "Middle Tennessee Electric Membership Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Heat Pump Loan Program",
+      "Link": "https://mte.com/EnergyServices"
+    },
+    {
+      "Utility/Program": "Mountain Electric Cooperative Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Heat Pump Loan program",
+      "Link": "https://www.mountainelectric.com/energy-right-programs/"
+    },
+    {
+      "Utility/Program": "North Georgia Electric Membership Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Heat Pump Loan Program",
+      "Link": "https://ngemc.com/account/home"
+    },
+    {
+      "Utility/Program": "Pickwick Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://pickwickec.com/no-title/"
+    },
+    {
+      "Utility/Program": "Powell Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://www.pve.coop/programs/residential/"
+    },
+    {
+      "Utility/Program": "Sequachee Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Heat Pump Loan Program",
+      "Link": "https://svalleyec.com/heat-pump-financing/"
+    },
+    {
+      "Utility/Program": "Soutwest Tennessee Electric Membership Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://www.stemc.com/residential/"
+    },
+    {
+      "Utility/Program": "Tennessee Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebae + Heat Pump Loan Program",
+      "Link": "https://www.tvec.com/residential.html"
+    },
+    {
+      "Utility/Program": "Tri-County Electric Membership Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://www.tcemc.org/energy-saving/"
+    },
+    {
+      "Utility/Program": "Tri-State Electric Membership Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://www.tsemc.net/resources/https-energyright-com/"
+    },
+    {
+      "Utility/Program": "Volunteer Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://vec.org/energy-efficiency/energy-right-residential-services/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "VA": [
+    {
+      "Utility/Program": "Virginia State",
+      "Type": "State",
+      "Incentive": "$2,000-$4,000+ in REC payments over time",
+      "Link": "https://flettexchange.com/services/virginia-grecs"
+    },
+    {
+      "Utility/Program": "NONE",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "NONE",
+      "Link": "NONE"
+    },
+    {
+      "Utility/Program": "Craig-Botetourt Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Energy Efficiency Loan Program",
+      "Link": " https://electel.org/apply/energy-efficient-loans/ "
+    },
+    {
+      "Utility/Program": "Powell Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Energy Efficiency Loan Program",
+      "Link": "https://www.pve.coop/programs/residential/heat-pump-financing/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "NC": [
+    {
+      "Utility/Program": "North Carolina State",
+      "Type": "State",
+      "Incentive": "HOMES & HEAR State Rebate Programs ",
+      "Link": "https://www.deq.nc.gov/energy-climate/state-energy-office/inflation-reduction-act/energy-efficiency-rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Blue Ridge Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/unit, Energy Efficiency Loan Program (ElecTel)",
+      "Link": "https://www.blueridgeenergy.com/residential/smart-rebates"
+    },
+    {
+      "Utility/Program": "Central Electric Membership Corp",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/unit, Energy Efficiency Loan Program (ElecTel), HERO rebates of $200-$600",
+      "Link": "https://www.cemcpower.com/member-services/loans-and-rebates"
+    },
+    {
+      "Utility/Program": "EnergyUnited",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit rebate",
+      "Link": "https://www.energyunited.com/rebates/"
+    },
+    {
+      "Utility/Program": "Four County EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$100/ton, Energy Efficiency Loan Program",
+      "Link": "https://www.fourcty.org/energy-efficiency/rebates/"
+    },
+    {
+      "Utility/Program": "Halifax EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/unit rebate",
+      "Link": "https://www.halifaxemc.com/energy-efficiency/rebates-loans/heat-pump-rebate/"
+    },
+    {
+      "Utility/Program": "Jones-Onslow EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$350/unit rebate",
+      "Link": "https://joemc.com/energywise/rebates/"
+    },
+    {
+      "Utility/Program": "Lumbee River EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/ton rebate",
+      "Link": "https://www.lumbeeriver.com/rebate-programs"
+    },
+    {
+      "Utility/Program": "Pee Dee Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/unit bill credit",
+      "Link": "https://www.pdemc.com/energy-efficiency/rebates-forms/heat-pump-rebate/"
+    },
+    {
+      "Utility/Program": "South River EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit bill credit",
+      "Link": "https://sremc.com/energy-star-heating-cooling"
+    },
+    {
+      "Utility/Program": "Surry-Yadkin EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$350/unit, Energy Efficiency Loan Program (ElecTel)",
+      "Link": "https://syemc.com/member-rebates"
+    },
+    {
+      "Utility/Program": "Tideland EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit rebate",
+      "Link": "https://www.tidelandemc.com/member-service/products-services/rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "WV": [
+    {
+      "Utility/Program": "West Virginia State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "SC": [
+    {
+      "Utility/Program": "South Carolina State",
+      "Type": "State",
+      "Incentive": "up to $3,500 tax credit per year (carries 10 years)",
+      "Link": "https://www.waterfurnace.com/literature/collateral/br1509mw%E2%80%93sc-tax-credit-residential.pdf"
+    },
+    {
+      "Utility/Program": "Dominion Energy South Carolina",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$400-500/unit ",
+      "Link": "https://www.dominionenergy.com/south-carolina/save-energy/heating-and-cooling-rebates/replacing-new-equipment"
+    },
+    {
+      "Utility/Program": "Duke Energy Carolinas",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $2,500/unit for conversion from ASHP",
+      "Link": "https://www.duke-energy.com/Home/Products/Smart-Saver/HVAC-Install"
+    },
+    {
+      "Utility/Program": "Blue Ridge Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate + on bill financing",
+      "Link": "https://www.blueridge.coop/gogeo"
+    },
+    {
+      "Utility/Program": "Laurens Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit rebate",
+      "Link": "https://laurenselectric.com/energy-programs/rebates-home-rewards-program/"
+    },
+    {
+      "Utility/Program": "MPD Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Loan Program",
+      "Link": "https://www.mpd.coop/energy-center/erc-loan/"
+    },
+    {
+      "Utility/Program": "Palmetto Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.palmetto.coop/programs-services"
+    },
+    {
+      "Utility/Program": "City of Georgetown Electric Utility Department",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "Loan program",
+      "Link": "https://www.georgetownsc.gov/governmental_services/departments/electric_utility_department/santee_cooper_smart_energy_home_program.php"
+    },
+    {
+      "Utility/Program": "City of Rock Hill Utilities Department",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$400/unit rebate + Loan program",
+      "Link": "https://www.cityofrockhill.com/departments/utilities/residential-services/smartchoice-rebates-loans"
+    }
+  ],
+  "GA": [
+    {
+      "Utility/Program": "Georgia State",
+      "Type": "State",
+      "Incentive": "HER & HEAR Rebate Programs",
+      "Link": "https://energyrebates.georgia.gov/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Altamaha EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Lending Program",
+      "Link": "https://www.altamahaemc.com/services/powerup-lending-program.html"
+    },
+    {
+      "Utility/Program": "Amicalola EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "RESP Loan Program",
+      "Link": "https://amicalolaemc.com/members/resp-loan-program"
+    },
+    {
+      "Utility/Program": "Cobb EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/unit rebate",
+      "Link": "https://cobbemc.com/energy-efficiency-incentive"
+    },
+    {
+      "Utility/Program": "Diverse Power",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$350/ton rebate",
+      "Link": "https://www.diversepower.com/energy-tools/rebates/"
+    },
+    {
+      "Utility/Program": "Greystone Power Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $600/unit (gas conversion)",
+      "Link": "https://www.greystonepower.com/rebates"
+    },
+    {
+      "Utility/Program": "Habersham EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/unit (gas conversion or replacement), Loan Program",
+      "Link": "https://www.habershamemc.com/energy-efficiency/energy-management/rebates/"
+    },
+    {
+      "Utility/Program": "Jackson EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/unit rebate + Loan Program",
+      "Link": "https://www.jacksonemc.com/member-services/home-services/rebates-incentives-loans/heat-pump-rebate"
+    },
+    {
+      "Utility/Program": "Jefferson Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Up to $450/unit",
+      "Link": "https://www.jec.coop/member-services/products/"
+    },
+    {
+      "Utility/Program": "North Georgia EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Okefenoke EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Loan Program",
+      "Link": "https://www.oremc.com/home-plus-loans"
+    },
+    {
+      "Utility/Program": "Rayle EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$100/ton rebate",
+      "Link": "https://rayleemc.com/consumer-rebates"
+    },
+    {
+      "Utility/Program": "Snapping Shoals EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $375/unit rebate",
+      "Link": "https://www.ssemc.com/energy-efficiency-rebates"
+    },
+    {
+      "Utility/Program": "Southern Rivers Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/unit rebate (gas conversion)",
+      "Link": "https://www.southernriversenergy.com/rebates"
+    },
+    {
+      "Utility/Program": "Sumter EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://sumteremc.coop/sumter-emc-rebates"
+    },
+    {
+      "Utility/Program": "Walton EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/unit rebate",
+      "Link": "https://www.waltonemc.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "NY": [
+    {
+      "Utility/Program": "New York State",
+      "Type": "State",
+      "Incentive": "NYS Clean Heat Programs (financing, tax credits, and rebates)",
+      "Link": "https://cleanheat.ny.gov/geothermal-heat-pumps/"
+    },
+    {
+      "Utility/Program": "ConEd",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $25,000/house or up to $35,000/house",
+      "Link": "https://www.coned.com/en/save-money/rebates-incentives-tax-credits/rebates-incentives-tax-credits-for-residential-customers/electric-heating-and-cooling-technology-for-renters-homeowners/save-thousands-on-a-geothermal-system"
+    },
+    {
+      "Utility/Program": "Central Hudson Gas & Electric ",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$2,000/ 10,000 Btuh",
+      "Link": "https://www.cenhud.com/en/my-energy/save-energy-money/residential-incentives/heat-pumps-residential/"
+    },
+    {
+      "Utility/Program": "National Grid",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$2,500/10,000 Bthu of max htg cap. at NEEP 5F",
+      "Link": "https://www.nationalgridus.com/media/pdfs/bus-ways-to-save/nys_clean_heat.pdf"
+    },
+    {
+      "Utility/Program": "Delaware County Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/unit",
+      "Link": "https://dce.coop/sites/default/files/PDF/Energy Efficient Programs/Energy Efficiency Programs_Energy_Star_Rebate_2022 V2_0.pdf"
+    },
+    {
+      "Utility/Program": "PSEG Long Island",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "up to $3,000/ton rebate",
+      "Link": "https://www.psegliny.com/en/saveenergyandmoney/energystarrebates"
+    }
+  ],
+  "MD": [
+    {
+      "Utility/Program": "Maryland State",
+      "Type": "State",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energy.maryland.gov/Pages/default.aspx"
+    },
+    {
+      "Utility/Program": "Baltimore Gas and Electric",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $3,000/unit rebate",
+      "Link": "https://bgesmartenergy.com/residential/help-me-save/heating-cooling"
+    },
+    {
+      "Utility/Program": "Potomac Edison",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$7,100/unit rebate",
+      "Link": "https://energysavemd-home.com/hvac/"
+    },
+    {
+      "Utility/Program": "Potomac Electric Power Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$350/ton rebate",
+      "Link": "https://visionelements.programprocessing.com/framework/Pepco/Pepco_CI_Tech_Sheet_HVAC_5.pdf?_ga=2.228145245.1535294044.1727979282-1953327330.1727978740&_gl=1*18dc4d6*_gcl_au*MTkwMzc0MzQ5LjE3Mjc5Nzg3NDA.*_ga*MTk1MzMyNzMzMC4xNzI3OTc4NzQw*_ga_TMBZ28Y1PN*MTcyNzk3ODc1My4xLjEuMTcyNzk3OTI4MS40NC4wLjA."
+    },
+    {
+      "Utility/Program": "Southern Maryland Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Available but unknown",
+      "Link": "https://www.smeco.coop/energy-efficiency/residential-programs/heating-cooling-rebates/"
+    },
+    {
+      "Utility/Program": "Baltimore Gas & Electric Company",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "up to $3,000/unit rebate",
+      "Link": "https://bgesmartenergy.com/residential/help-me-save/heating-cooling"
+    },
+    {
+      "Utility/Program": "Prince George's County",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "up to $5,000/unit tax credit",
+      "Link": "https://www.princegeorgescountymd.gov/departments-offices/finance/property-tax-credits/residential"
+    }
+  ],
+  "NM": [
+    {
+      "Utility/Program": "New Mexico State",
+      "Type": "State",
+      "Incentive": "up to $9,000 tax credit",
+      "Link": "https://www.emnrd.nm.gov/ecmd/faq/geothermal-ground-coupled-heat-pump-income-tax-credit-7-2-18-24/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Central New Mexico Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Central Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,500/ton rebate",
+      "Link": "https://www.cvecoop.org/heating-cooling-rebates"
+    },
+    {
+      "Utility/Program": "Columbus Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.columbusco-op.org/rebates"
+    },
+    {
+      "Utility/Program": "Continental Divide Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate + $100/unit for desuperheater",
+      "Link": "https://cdec.coop/2025-energy-efficiency-rebates"
+    },
+    {
+      "Utility/Program": "Jemez Mountains Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.jemezcoop.org/rebates"
+    },
+    {
+      "Utility/Program": "Lea County Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Energy & Weatherization Loan Program",
+      "Link": "https://www.lcecnet.com/energy-and-weatherization-loans"
+    },
+    {
+      "Utility/Program": "Otero County Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://ocec-inc.com/energy-efficiency-program"
+    },
+    {
+      "Utility/Program": "Roosevelt County Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Energy Efficiency Loan Program",
+      "Link": "https://rcec.coop/3-interest-erc-loan-program"
+    },
+    {
+      "Utility/Program": "Sierra Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Uknown (Enter Information)",
+      "Link": "https://sierraelectric.org/energy-efficiency-rebates"
+    },
+    {
+      "Utility/Program": "Socorro Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://socorroelectric.com/rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "AZ": [
+    {
+      "Utility/Program": "Arizona State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "NONE",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Mohave Electric Co-op, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Up to $2,000/unit rebate",
+      "Link": "https://www.mohaveelectric.com/energy-solutions/rebates/heat-pump-rebate/"
+    },
+    {
+      "Utility/Program": "Sulpher Springs Valley Elec. Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/unit rebate",
+      "Link": "https://www.ssvec.org/programs/rebates.php"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "LA": [
+    {
+      "Utility/Program": "Lousiana State",
+      "Type": "State",
+      "Incentive": "HOMES & HER Rebate Programs",
+      "Link": "https://www.dnr.louisiana.gov/page/home-energy-rebates-programs"
+    },
+    {
+      "Utility/Program": "Central Louisiana Electric Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $3,500/unit rebate",
+      "Link": "https://www.cleco.com/residential-commercial/energy-efficiency-renewables/power-wise/residential-rebates/residential-hvac-rebate-program"
+    },
+    {
+      "Utility/Program": "Entergy - Louisiana",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $500/unit rebate",
+      "Link": "https://www.entergylouisiana.com/energyefficiency/residential"
+    },
+    {
+      "Utility/Program": "Southwestern Electric Power Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $200/ton rebate",
+      "Link": "https://www.swepco.com/savings/home/money/rebates/"
+    },
+    {
+      "Utility/Program": "Claiborne Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $500/unit",
+      "Link": "https://our.coop/programs/electric-heat-pump-program/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "MS": [
+    {
+      "Utility/Program": "Mississippi State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "4-County Electric Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,500/unit rebate",
+      "Link": "https://www.4county.org/residential-energy-savings/"
+    },
+    {
+      "Utility/Program": "ACE Power",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://ace-power.com/residential/"
+    },
+    {
+      "Utility/Program": "Central Electric Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate  ",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Natchez Trace Electric Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "North East Mississippi Electric Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Prentiss County Electric Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Singing River Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/unit rebate",
+      "Link": "https://singingriver.com/my-home/heat-pumps/"
+    },
+    {
+      "Utility/Program": "Tallahatchie Valley Electric Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate + Heat Pump Loan Program",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Tishomingo County Electric Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://energyright.com/residential/rebates/"
+    },
+    {
+      "Utility/Program": "Tombigbee Electric Power Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Heat Pump Loan Program",
+      "Link": "https://www.tombigbeeelectric.com/programs"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "AL": [
+    {
+      "Utility/Program": "Alabama State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Arab Electric Cooprative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Baldwin County EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Central Alabama Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "City of Opp",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Clarke-Washington EMC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Coosa Valley Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Covington Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Cullman Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Dixie Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Pea River Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Pioneer Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "South Alabama Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Southern Pine Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Tombigbee Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "PA": [
+    {
+      "Utility/Program": "Pennsylvania State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Beford REC, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/ton rebate",
+      "Link": "https://www.bedfordrec.com/rebates"
+    },
+    {
+      "Utility/Program": "Central Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/unit rebate",
+      "Link": "https://www.central.coop/rebates"
+    },
+    {
+      "Utility/Program": "Claverack Rural Electric Cooprative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$100/unit rebate",
+      "Link": "https://www.claverack.com/claverack-rebate-programs"
+    },
+    {
+      "Utility/Program": "REA Energy Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "install GSHP in-house",
+      "Link": "https://www.reaenergy.com/hvac"
+    },
+    {
+      "Utility/Program": "Somerset REC, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "install GSHP in-house",
+      "Link": "https://www.somersetrec.com/heat-pump-options"
+    },
+    {
+      "Utility/Program": "United Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/unit bill credit",
+      "Link": "https://www.unitedpa.com/heat-pumps"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "OR": [
+    {
+      "Utility/Program": "Oregon State",
+      "Type": "State",
+      "Incentive": "up to $2,000/unit rebate",
+      "Link": "https://www.oregon.gov/energy/Incentives/Pages/HP3.aspx"
+    },
+    {
+      "Utility/Program": "Oregon State",
+      "Type": "State",
+      "Incentive": "HOMES & HEAR Rebates",
+      "Link": "https://www.oregon.gov/energy/Incentives/Pages/home-energy-rebates.aspx"
+    },
+    {
+      "Utility/Program": "Idaho Power",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $3,000/unit rebate",
+      "Link": "https://www.idahopower.com/energy-environment/ways-to-save/savings-for-your-home/rebates-and-offers/heating-and-cooling-efficiency-program/"
+    },
+    {
+      "Utility/Program": "Central Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $3,200/unit rebate",
+      "Link": "https://www.cec.coop/energy-programs/residential-efficiency/heat-pumps-duct-sealing/"
+    },
+    {
+      "Utility/Program": "Oregon Trail Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Yes (Must Apply for Details)",
+      "Link": "https://www.otec.coop/rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "ID": [
+    {
+      "Utility/Program": "Idaho State",
+      "Type": "State",
+      "Incentive": "tax deduction up to $20k",
+      "Link": "https://oemr.idaho.gov/financial-information/incentives/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Clearwater Power Company",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,500/unit rebate",
+      "Link": "https://www.clearwaterpower.com/energy-efficiency/rebates/"
+    },
+    {
+      "Utility/Program": "Fall river Rural Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$2,500/unit rebate",
+      "Link": "https://www.fallriverelectric.com/home-improvement-rebates"
+    },
+    {
+      "Utility/Program": "Idaho County Light & Power",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $3,000/ unit rebate",
+      "Link": "https://www.iclp.coop/energy-resources/energy-rebates/"
+    },
+    {
+      "Utility/Program": "Kootenai Electric Co-op, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,000/unit rebate",
+      "Link": "https://www.directefficiency.com/kec-residential-ground-source-heat-pump-rebate/"
+    },
+    {
+      "Utility/Program": "Northern Lights, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Available, Unknown",
+      "Link": "https://www.nli.coop/save/rebates/"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "CA": [
+    {
+      "Utility/Program": "California State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Plumas-Sierra REC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/ton rebate",
+      "Link": "https://www.psrec.coop/energy/rebates/ground-source-heat-pumps/ "
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "MT": [
+    {
+      "Utility/Program": "Montana State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Beartooth Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Big Flat Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Central Montana Elec. Power Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Fergus Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Goldenwest Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Hill County Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "upt to $1,000/system rebate",
+      "Link": "https://www.hcelectric.com/services-and-programs/ground-source-heat-pumps"
+    },
+    {
+      "Utility/Program": "Lower Yellowstone REA, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$150/ton rebate",
+      "Link": "https://www.lyrec.com/sites/lyrec/files/heat pump contract form.pdf"
+    },
+    {
+      "Utility/Program": "Marias River Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "McCone Electric Co-op, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$100/ton rebate",
+      "Link": "https://mcconeelectric.coop/rebates"
+    },
+    {
+      "Utility/Program": "Mid-Yellowstone Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "NorVal Electric Co-op, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Park Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Sheridan Electric Co-op, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Southeast Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Sun River Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Tongue River Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Upper Missouri G&T Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Vigilante Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Yellowstone Valley Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "WY": [
+    {
+      "Utility/Program": "Wyoming State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Big Horn Rural Electric Company",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://bighornrea.com/sites/default/files/2024 Electrify and Save Brochure.pdf"
+    },
+    {
+      "Utility/Program": "Carbon Power & Light, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Garland Light & Power Co.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "High Plains Power, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "High West Energy, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://highwest.coop/rebates"
+    },
+    {
+      "Utility/Program": "Niobrara electric Assn, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Powder River Energy Corp.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Wheatland REA",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Wyrulec Company",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "FL": [
+    {
+      "Utility/Program": "Florida state",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Duke Energy Florida",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "up to $1,000/unit rebate (strip heat replacement)",
+      "Link": "https://www.duke-energy.com/home/products/home-energy-improvement/hvac-replacement"
+    },
+    {
+      "Utility/Program": "Tampa Electric Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$550/unit rebate",
+      "Link": "https://www.tampaelectric.com/residential/saveenergy/heatingcooling/"
+    },
+    {
+      "Utility/Program": "Florida Public Utilities Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$100/unit rebate",
+      "Link": "https://fpuc.com/residential-electric/residential-electric-rebates/"
+    },
+    {
+      "Utility/Program": "Clay Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/unit bill credit + Loan Program",
+      "Link": "https://www.clayelectric.com/energy-rebates-loans"
+    },
+    {
+      "Utility/Program": "West Florida Electric Co-op Assn.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Energy Efficiency Loan Program",
+      "Link": "https://www.westflorida.coop/eef-loan-program"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "NV": [
+    {
+      "Utility/Program": "Nevada State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Lincoln County Power District 1",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Mt. Wheeler Power, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Valley Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Wells REC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "UT": [
+    {
+      "Utility/Program": "Utah State",
+      "Type": "State",
+      "Incentive": "$2,000/unit income tax credit",
+      "Link": "https://energy.utah.gov/homepage/tax-credits/renewable-energy-systems-tax-credit/"
+    },
+    {
+      "Utility/Program": "Utah State",
+      "Type": "State",
+      "Incentive": "HOMES & HEAR Rebates",
+      "Link": "https://hub.utahcleanenergy.org/energy-efficiency/energy-efficiency-incentives/"
+    },
+    {
+      "Utility/Program": "Rocky Mountain Power",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$2,000/unit rebate",
+      "Link": "https://wattsmarthomes.com/rebates/ground-source-heat-pumps-ut/"
+    },
+    {
+      "Utility/Program": "Dixie Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$200/ton rebate",
+      "Link": "https://www.dixiepower.com/services/rebates/"
+    },
+    {
+      "Utility/Program": "Garkane Energy Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.garkaneenergy.com/energy-efficient-rebates"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "WA": [
+    {
+      "Utility/Program": "Washington State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Benton Rural Electric Assn",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Columbia Rural Electric Assn",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Nespelem Valley Electric Co-op, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Tanner Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$3,500/unit rebate",
+      "Link": "https://www.tannerelectric.coop/energy-efficiency-incentives"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "AR": [
+    {
+      "Utility/Program": "Arkansas State",
+      "Type": "State",
+      "Incentive": "Nope",
+      "Link": "Nope"
+    },
+    {
+      "Utility/Program": "Nope",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "Nope",
+      "Link": "Nope"
+    },
+    {
+      "Utility/Program": "Mississippi County Elec. Co-op, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Nope",
+      "Link": "Nope"
+    },
+    {
+      "Utility/Program": "North Arkansas Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "10 year loan program",
+      "Link": "https://www.naeci.com/loans"
+    },
+    {
+      "Utility/Program": "Petit Jean Electric Co-op Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Nope",
+      "Link": "Nope"
+    },
+    {
+      "Utility/Program": "Southwest Arkansas Electric Cooperative Corp",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "Nope",
+      "Link": "Nope"
+    },
+    {
+      "Utility/Program": "Nope",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "Nope",
+      "Link": "Nope"
+    }
+  ],
+  "VT": [
+    {
+      "Utility/Program": "Vermont State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Green Mountain Power ",
+      "Type": "Investor-Owned",
+      "Incentive": "up to $2,100/ton rebate",
+      "Link": "https://www.efficiencyvermont.com/rebates/list?cat=Heating%2C+Cooling+%26+Ventilation&hvacfilter=Heat+Pumps&type="
+    },
+    {
+      "Utility/Program": "Vermont Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $2,100/ton rebate",
+      "Link": "https://www.efficiencyvermont.com/rebates/list?cat=Heating%2C+Cooling+%26+Ventilation&hvacfilter=Heat+Pumps&type="
+    },
+    {
+      "Utility/Program": "Burlington Electric Department",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "customer basis",
+      "Link": "https://www.burlingtonelectric.com/gshp"
+    },
+    {
+      "Utility/Program": "Village of Jacksonville Electric Department",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/unit (ducted system)",
+      "Link": "https://vppsa.com/resources/rebates/2025-vppsa-rebates-incentives/"
+    },
+    {
+      "Utility/Program": "Lyndonville Electric Department",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "up to $2,100/ton",
+      "Link": "https://www.efficiencyvermont.com/rebates/list/ground-source-heat-pumps"
+    },
+    {
+      "Utility/Program": "Village of Northfield Electric Dept.",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/unit (ducted system)",
+      "Link": "https://vppsa.com/resources/rebates/2025-vppsa-rebates-incentives/"
+    },
+    {
+      "Utility/Program": "Orleans Electric Department",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "$200/unit (ducted system)",
+      "Link": "https://vppsa.com/resources/rebates/2025-vppsa-rebates-incentives/"
+    },
+    {
+      "Utility/Program": "Stowe Electric Department",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "up to $2,100/ton",
+      "Link": "https://www.efficiencyvermont.com/rebates/list/ground-source-heat-pumps"
+    }
+  ],
+  "TX": [
+    {
+      "Utility/Program": "Texas State",
+      "Type": "State",
+      "Incentive": "None ",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Bailey County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Bandera EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Bartlett EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Big Country EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Bluebonnet EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Bowie-Cass EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Brazos EPC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Bryan Texas Utility (BTU)",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Central Texas EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Cherokee County ECA",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Coleman County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Comanche ECA",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Concho Valley EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "CoServ Electric",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Deaf Smith EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Deep East Texas EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "East Texas EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Fannin County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Farmers EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Fayette EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Fort Belknap EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Golden Spread EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Grayson-Collin EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Greenbelt EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "GVEC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Hamilton County ECA",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Heart of Texas EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "HILCO EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Houston County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "J-A-C EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Jackson EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Jasper-Newton EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Karnes EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Lamar County ECA",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Lamb County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Lighthouse EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Lower Colorado River Authority",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Lyntegar EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Magic Valley EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Medina EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "MidSouth EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Navarro County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Navasota Valley EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "North Plains EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Northeast Texas EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Nueces EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Panola-Harrison EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Pedernales EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Pen Tex Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Rayburn Country EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Rio Grande EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Rita Blanca EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Rusk County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Sam Houston EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "San Bernard EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "San Miguel EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "San Patricio EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "South Plains EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "South Texas EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Southwest Texas EC ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Swisher EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Taylor EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Tri-County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Trinity Valley EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "United Cooperative Services",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Upshur Rural ECC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Victoria EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Wharton County EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Wise EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Wood county EC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "IA": [
+    {
+      "Utility/Program": "Iowa State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "MidAmerican Energy Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$900-1,200/unit rebate",
+      "Link": "https://www.midamericanenergy.com/home-discounts-and-rebates"
+    },
+    {
+      "Utility/Program": "Alliant Energy-Interstate Power & Light Company",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "$900-$1,200/unit rebate",
+      "Link": "https://www.alliantenergy.com/ways-to-save/instant-discounts/iowa"
+    },
+    {
+      "Utility/Program": "Access Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.accessenergycoop.com/residential-rebates"
+    },
+    {
+      "Utility/Program": "Allamakee-Clayton Elec. Co-op, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.acrec.com/sites/default/files/documents/Rebates/2024/2024IncentiveForm -- HVACwcostFILLABLEUPDATED.pdf"
+    },
+    {
+      "Utility/Program": "Butler County Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate +$50",
+      "Link": "https://www.butlerrec.coop/sites/default/files/documents/rebates/2024/Heat Pump_2023.pdf"
+    },
+    {
+      "Utility/Program": "Calhoun County Electric Cooperative Assn.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate +$50",
+      "Link": "https://www.calhounrec.coop/sites/default/files/Rebate Forms/Calhoun GeoThermal %26 Air Source Heat Pump Rebate 2023A Logo.pdf"
+    },
+    {
+      "Utility/Program": "Chariton Valley Electric Co-op, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.cvrec.com/energy-efficiency-rebates"
+    },
+    {
+      "Utility/Program": "Clarke Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.cecnet.net/sites/default/files/PDF_Files/Energy_Programs/2024_Rebates_Forms/Residential Geothermal R2A.pdf"
+    },
+    {
+      "Utility/Program": "Consumers Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate",
+      "Link": "https://www.consumersenergy.coop/rebates"
+    },
+    {
+      "Utility/Program": "East-Central Iowa REC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.ecirec.coop/sites/default/files/documents/2024 rebates/24-R2A_Geo_web.pdf"
+    },
+    {
+      "Utility/Program": "Eastern Iowa Light & Power Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.easterniowa.com/energy-center/rebates/"
+    },
+    {
+      "Utility/Program": "Farmers Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.farmersrec.com/sites/default/files/PDF_Files/2024_Rebate_Files/Residential Geothermal R2A.pdf"
+    },
+    {
+      "Utility/Program": "Franklin Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate +$50",
+      "Link": "https://www.franklinrec.coop/sites/default/files/PDFs/Rebates/Rebates Fillable 2022/Heat Pump.pdf"
+    },
+    {
+      "Utility/Program": "Grundy County REC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate +$50",
+      "Link": "https://www.grundycountyrecia.com/sites/default/files/documents/rebates/Grundy_Heat_Pump_Rebate Rev2023.pdf"
+    },
+    {
+      "Utility/Program": "Guthrie County REC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate +$350",
+      "Link": "https://www.guthrie-rec.coop/sites/default/files/PDF/Energy_Efficiency/2024_Rebates_Files/Residential Geothermal R2A.pdf"
+    },
+    {
+      "Utility/Program": "Harrison County REC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,400/ton rebate",
+      "Link": "https://www.hcrec.coop/rebates"
+    },
+    {
+      "Utility/Program": "Heartland Power Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$500/ton rebate",
+      "Link": "https://www.heartlandpower.com/sites/default/files/2024 Rebate Form.pdf"
+    },
+    {
+      "Utility/Program": "Iowa Lakes Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate +$50",
+      "Link": "https://www.ilec.coop/_files/ugd/57f23e_3809113d1089474c9b62ab7955135548.pdf"
+    },
+    {
+      "Utility/Program": "Lyon Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/ton rebate",
+      "Link": "https://www.lyonrec.coop/sites/default/files/2020-2021RebateForm.pdf"
+    },
+    {
+      "Utility/Program": "Maquoketa Valley REC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.mvec.coop/sites/default/files/rebates/2024_MVEC_Residential_Incentives_WEBMASTER_REV_July.pdf"
+    },
+    {
+      "Utility/Program": "Midland Power Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://midlandpower.coop/heatpumps"
+    },
+    {
+      "Utility/Program": "Nishnabotna Valley REC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,400/ton rebate",
+      "Link": "https://www.nvrec.com/_files/ugd/ae25e7_2b7576e301ff4ab5ade221262e26af19.pdf"
+    },
+    {
+      "Utility/Program": "North West Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,400/ton rebate",
+      "Link": "https://www.nwrec.coop/_files/ugd/6e6368_66752f2979de460c904370db473c1a17.pdf"
+    },
+    {
+      "Utility/Program": "Osceola Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,000/ton rebate",
+      "Link": "https://www.osceolaelectric.com/heating-and-cooling-rebates"
+    },
+    {
+      "Utility/Program": "Pella Co-op Electric Assn. ",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.pella-cea.org/heating-and-cooling-rebates"
+    },
+    {
+      "Utility/Program": "Prairie energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate +$50",
+      "Link": "https://www.prairieenergy.coop/sites/prairieenergy/files/Solson/Energy Solutions/Air Source Heat Pump Rebate %2B Load Control - Revised 4-4-19.pdf"
+    },
+    {
+      "Utility/Program": "Raccoon Valley Electric Cooperative, Inc",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$300/ton rebate",
+      "Link": "https://www.rvec.coop/rebates"
+    },
+    {
+      "Utility/Program": "Southern Iowa Electric Co-op, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/ton rebate",
+      "Link": "https://www.sie.coop/heating-cooling-rebates"
+    },
+    {
+      "Utility/Program": "Southwest Iowa Rural Electric Co-op",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.swiarec.coop/sites/default/files/Rebates/Rebates 2024/Residential/Residential Geothermal R2A.pdf"
+    },
+    {
+      "Utility/Program": "T.I.P. Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$400/ton rebate",
+      "Link": "https://www.tiprec.com/sites/default/files/PDF_Files/Energy_Programs/2024_Rebate_Info/2024_TIPREC_Residential_Incentives_MASTERWEB.pdf"
+    },
+    {
+      "Utility/Program": "Western Iowa Power Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,400/ton rebate",
+      "Link": "https://www.wipco.com/_files/ugd/f01033_4ec57e6b44f349848cdb6eca86fb97f8.pdf"
+    },
+    {
+      "Utility/Program": "Woodbury County Rural Electric Cooperative Assn.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$1,400/ton rebate",
+      "Link": "https://www.woodburyrec.com/rebates"
+    },
+    {
+      "Utility/Program": "Nope",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "Nope",
+      "Link": "Nope"
+    }
+  ],
+  "KY": [
+    {
+      "Utility/Program": "Kentucky State",
+      "Type": "State",
+      "Incentive": "None ",
+      "Link": "None "
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Big Sandy RECC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Blue Grass Energy Cooperative Corp.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "up to $750/unit rebate",
+      "Link": "https://bgenergy.com/replacing-resistance-heat"
+    },
+    {
+      "Utility/Program": "Clark Energy Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Cumberland Valley Electric, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "East Kentucky Power Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Farmers RECC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Fleming-Mason Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Grayson Rural Electric Cooperative Corporation",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Inter-County Energy Cooperative Corp.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Jackson Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Kentucky Assn. of Elec. Co-ops",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Licking Valley RECC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Nolin RECC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$750/home rebate - new home program",
+      "Link": "https://nolinrecc.com/the-touchstone-energy-rebate-programs/"
+    },
+    {
+      "Utility/Program": "Owen Electric Cooperative, Inc.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Salt River Electric Cooperative Corp.",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Shelby Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "South Kentucky RECC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Taylor County RECC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "West Kentucky RECC",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "ND": [
+    {
+      "Utility/Program": "North Dakota State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Burke-Divide Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$10,000 loan program",
+      "Link": "https://www.bdec.coop/member-loan-program"
+    },
+    {
+      "Utility/Program": "Capital Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Cass County Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Cavalier Rural Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$250/ton rebate",
+      "Link": "http://www.cavalierrec.com/rebates.html"
+    },
+    {
+      "Utility/Program": "Dakota Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$10,000 loan program",
+      "Link": "https://dakotavalley.com/low-interest-loans"
+    },
+    {
+      "Utility/Program": "KEM Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "McKenzie Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/unit rebate",
+      "Link": "https://mckenzieelectric.com/member-rebates-program"
+    },
+    {
+      "Utility/Program": "McLean Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Mor-Gran-Sou Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Mountrail-Williams Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Nodak Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "North Central Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Northern Plains Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Roughrider Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Slope Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Verendrye Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ],
+  "SD": [
+    {
+      "Utility/Program": "South Dakota State",
+      "Type": "State",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Investor-Owned Utilities",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Black Hills Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Bon Homme Yankton Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Butte Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Cam Wal Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Central Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/unit rebate + rate",
+      "Link": "https://www.centralec.coop/rebates-incentives"
+    },
+    {
+      "Utility/Program": "Charles Mix Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "$600/unit rebate  ",
+      "Link": "https://www.cme.coop/rebates"
+    },
+    {
+      "Utility/Program": "Cherry-Todd Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Clay-Union Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Codington-Clark Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Dakota Energy Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Douglas Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "FEM Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Grand Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "H-D Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Kingsbury Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Lacreek Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Lake Region Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Moreau-Grand Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Northern Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Oahe Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Rosebud Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Sioux Valley Energy",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Southeastern Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Traverse Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Union County Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "West Central Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "West River Electric Association",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "Whetstone Valley Electric Cooperative",
+      "Type": "Rural Electric Cooperatives",
+      "Incentive": "None",
+      "Link": "None"
+    },
+    {
+      "Utility/Program": "None",
+      "Type": "Public Power/Municipal Electric Provider",
+      "Incentive": "None",
+      "Link": "None"
+    }
+  ]
+};
+
+        // State names mapping
+        const stateNames = {
+            "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
+            "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "FL": "Florida", "GA": "Georgia",
+            "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa",
+            "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland",
+            "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi", "MO": "Missouri",
+            "MT": "Montana", "NE": "Nebraska", "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey",
+            "NM": "New Mexico", "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio",
+            "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina",
+            "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont",
+            "VA": "Virginia", "WA": "Washington", "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming"
+        };
+
+        // DOM elements
+        const stateSelect = document.getElementById('state-select');
+        const utilitySelect = document.getElementById('utility-select');
+        const calculateBtn = document.getElementById('calculate-btn');
+        const resultsDiv = document.getElementById('results');
+        const stateIncentivesDiv = document.getElementById('state-incentives');
+        const utilityIncentivesDiv = document.getElementById('utility-incentives');
+        const stateCountSpan = document.getElementById('state-count');
+        const utilityCountSpan = document.getElementById('utility-count');
+
+        // Populate state dropdown
+        Object.keys(stateNames).forEach(stateCode => {
+            if (incentivesData[stateCode]) {
+                const option = document.createElement('option');
+                option.value = stateCode;
+                option.textContent = stateNames[stateCode];
+                stateSelect.appendChild(option);
+            }
+        });
+
+        // Update utility options based on selected state
+        stateSelect.addEventListener('change', function() {
+            const selectedState = this.value;
+            utilitySelect.innerHTML = '<option value="">-- Select a Utility --</option>';
+            
+            if (selectedState && incentivesData[selectedState]) {
+                // Get unique utilities for the selected state
+                const utilities = [...new Set(incentivesData[selectedState]
+                    .filter(item => item.Type !== "State")
+                    .map(item => item["Utility/Program"]))];
+                
+                utilities.forEach(utility => {
+                    const option = document.createElement('option');
+                    option.value = utility;
+                    option.textContent = utility;
+                    utilitySelect.appendChild(option);
+                });
+            }
+        });
+
+        // Calculate and display incentives
+        calculateBtn.addEventListener('click', function() {
+            const selectedState = stateSelect.value;
+            const selectedUtility = utilitySelect.value;
+            
+            if (!selectedState || !selectedUtility) {
+                alert('Please select both a state and a utility.');
+                return;
+            }
+            
+            // Display state incentives
+            stateIncentivesDiv.innerHTML = '';
+            let stateIncentiveCount = 0;
+            
+            if (incentivesData[selectedState]) {
+                const stateIncentives = incentivesData[selectedState].filter(
+                    item => item.Type === "State" && item.Incentive !== "None" && item.Incentive !== "Nope"
+                );
+                
+                stateIncentiveCount = stateIncentives.length;
+                
+                if (stateIncentiveCount > 0) {
+                    stateIncentives.forEach(incentive => {
+                        const incentiveCard = document.createElement('div');
+                        incentiveCard.className = 'incentive-card state-card';
+                        incentiveCard.innerHTML = `
+                            <div class="incentive-type">${incentive.Type}</div>
+                            <div class="incentive-name">${incentive.Incentive}</div>
+                            ${incentive.Link && incentive.Link !== "None" && incentive.Link !== "Nope" ? 
+                                `<a href="${incentive.Link}" class="incentive-link" target="_blank">Learn More</a>` : 
+                                ''}
+                        `;
+                        stateIncentivesDiv.appendChild(incentiveCard);
+                    });
+                } else {
+                    stateIncentivesDiv.innerHTML = '<div class="no-incentives">No state incentives available</div>';
+                }
+            }
+            
+            // Display utility incentive
+            utilityIncentivesDiv.innerHTML = '';
+            let utilityIncentiveCount = 0;
+            
+            if (incentivesData[selectedState]) {
+                const utilityIncentives = incentivesData[selectedState].filter(
+                    item => item["Utility/Program"] === selectedUtility && 
+                           item.Incentive !== "None" && 
+                           item.Incentive !== "Nope" &&
+                           item.Type !== "State"
+                );
+                
+                utilityIncentiveCount = utilityIncentives.length;
+                
+                if (utilityIncentiveCount > 0) {
+                    utilityIncentives.forEach(incentive => {
+                        const incentiveCard = document.createElement('div');
+                        incentiveCard.className = 'incentive-card utility-card';
+                        incentiveCard.innerHTML = `
+                            <div class="incentive-type">${incentive.Type}</div>
+                            <div class="incentive-name">${incentive.Incentive}</div>
+                            <div class="incentive-description">${incentive["Utility/Program"]}</div>
+                            ${incentive.Link && incentive.Link !== "None" && incentive.Link !== "Nope" ? 
+                                `<a href="${incentive.Link}" class="incentive-link" target="_blank">Learn More</a>` : 
+                                ''}
+                        `;
+                        utilityIncentivesDiv.appendChild(incentiveCard);
+                    });
+                } else {
+                    utilityIncentivesDiv.innerHTML = '<div class="no-incentives">No utility incentives available</div>';
+                }
+            }
+            
+            // Update counts
+            stateCountSpan.textContent = stateIncentiveCount;
+            utilityCountSpan.textContent = utilityIncentiveCount;
+            
+            // Show results
+            resultsDiv.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
